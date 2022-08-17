@@ -8,9 +8,9 @@
 ### [Dockerとは](wid/README.md)
 
  * 仮想化とは
- * Virtual MachineとContainer
+ * ハイパーバイザーとコンテナ
  * Dockerの何が良いのか
 
 ### [Dockerのインストールとセットアップ](stp/README.md)
 
- *
+ * 
