@@ -11,6 +11,8 @@
  * ハイパーバイザーとコンテナ
  * Dockerの何が良いのか
 
-### [Dockerのインストールとセットアップ](stp/README.md)
+### [Dockerのインストールと基本操作](stp/README.md)
 
- * 
+ * Dockerのインストール
+ * 各種用語
+ * Dockerの基本操作
