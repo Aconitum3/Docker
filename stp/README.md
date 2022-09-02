@@ -108,7 +108,7 @@ $ docker ps
 ```
 起動しているコンテナは1つもない。再度コンテナを起動するには、次のコマンドを実行する。
 ```shell
-docker start {-- CONTAINER ID or NAMES --}
+$ docker start {-- CONTAINER ID or NAMES --}
 ```
 作成したコンテナを削除してみる。コンテナのシェルに入っているなら`exit`で抜けた後に、次のコマンドを実行する。
 ```shell
