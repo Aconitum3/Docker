@@ -39,6 +39,9 @@ apt-getコマンドは、Linuxでソフトウェアの導入や管理、削除�
 * `apt-get install ****`
 
     パッケージの一覧をもとに、パッケージ「 **** 」をインストールする。
+* `apt-get moo`
+
+    Supter Cow Powersを持った牛が現れる。
 
 ## Dockerの基本操作
 
@@ -64,9 +67,66 @@ $ ls
 > mydir
 ```
 `ls`でカレントディレクトリ上のファイル名を確認後、`cd`でカレントディレクトリをhomeに変更し、homeディレクトリ上に`mkdir`でmydirディレクトリを作成した。
-次に、Linuxで広く利用されるテキストエディタVimをインストールし、テキストファイルを編集してみる。
+次に、Linuxで広く利用されるテキストエディタのvimをインストールし、テキストファイルを編集してみる。
 
 ```shell
-$ apt-get update
-$ apt-get install vim
+$ apt-get update   # インストール可能なパッケージの一覧を更新
+$ apt-get install vim   # vimをインストール
+
+$ cd mydir
+$ touch test.txt   # カレントディレクトリにtest.txtという名前のファイルを作成
+$ vim test.txt   # vimでtest.txtファイルを開く
 ```
+`apt-get`で、vimをインストールし、`touch`で作成したtest.txtファイルを`vim`コマンドで開いている。ここでは、vimの簡単な操作方法のみを説明する。vimには4つモードがあり、これらのモードを切り替えながら編集を行う。vim起動直後はnormalモードで`i`キーを押すとinsertモードに切り替わる。insertモードでは主に文字の入力などを行う。insertモードからnormalモードにはエスケープキーで切り替える。nomralモードの状態で`ZZ`を入力すると、保存して終了ができる。試しにtest.txtに好きな文字列を入力し、保存してみると良い。
+
+`cat`で書き込んだ内容を確認してみる。
+```shell
+$ cat test.txt   # test.txtファイルの中身を確認
+> I like SUSHI.   # 書き込んだ内容が出力される
+```
+
+Ctrl+P, Ctrl+Qでシェルから抜けることができる。この操作をdetachという。シェルから抜けた状態で次のコマンドを実行する。
+```shell
+$ docker ps
+> CONTAINER ID   IMAGE          COMMAND   CREATED       STATUS         PORTS     NAMES
+  ************   ubuntu:18.04   "bash"    *******       Up ***                   *****
+```
+`docker ps`で、起動中のコンテナを確認することができる。NAMESはコンテナ名で、`docker run`でコンテナ名を指定しない場合、ランダムに決まる。再度、シェルに入るには次のコマンドを実行する。
+```shell
+$ docker attach {-- CONTAINER ID or NAMES --}
+```
+`{}`はコンテナIDかコンテナ名のどちらかを入力する。例えば、コンテナ名が`my_con`ならば、`docker attach my_con`とすれば良い。
+
+シェルに入った状態で、次のコマンドを実行する。
+```shell
+$ exit
+```
+`exit`はbashを終了するコマンドである。このコンテナは、bashが終了すると停止する。`docker ps`で確認してみる。
+```shell
+$ docker ps
+> CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+```
+起動しているコンテナは1つもない。再度コンテナを起動するには、次のコマンドを実行する。
+```shell
+docker start {-- CONTAINER ID or NAMES --}
+```
+作成したコンテナを削除してみる。コンテナのシェルに入っているなら`exit`で抜けた後に、次のコマンドを実行する。
+```shell
+$ docker ps -a
+> CONTAINER ID   IMAGE           COMMAND   CREATED   STATUS        PORTS     NAMES
+  ************   ubuntu:18.04    "bash"    *******   Exited ***              *****
+
+$ docker rm {-- CONTAINER ID or NAMES --}
+$ docker ps -a
+> CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+```
+`docker ps -a`は起動していないコンテナも含めて全てのコンテナの状態を表示するコマンドである。`docker rm`は指定したコンテナを削除するコマンドである。
+
+最後に、いくつかのオプションを加えて、同じイメージからコンテナを作成する。次のコマンドを実行する。
+```shell
+$ docker run -it -d --name test ubuntu:18.04
+$ docker ps
+> CONTAINER ID   IMAGE          COMMAND   CREATED         STATUS         PORTS     NAMES
+  ************   ubuntu:18.04   "bash"    *******         Up ***                   test
+```
+`-d`と`--name test`について説明する。`-d`はコンテナをdetachedモードで起動するオプションである。デフォルトのforegroundモードと異なり、detachedモードで起動したコンテナは、起動時にシェルに入ることがなく、バックグラウンドで動作する。`--name`はコンテナ名を指定するオプションである。上の例ではコンテナ名を`test`にした。`-it`については後で説明するが、このオプションを付けないとコンテナが起動直後に停止する。
