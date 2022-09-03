@@ -23,7 +23,9 @@ Anacondaのインストールが完了したが、PATHを通していないた�
 $ apt-get install vim
 $ vim ~/.profile
 ```
-vimで`.profile`を開いたら、ファイルの末尾に`PATH="$PATH:/opt/mono/3.10/bin"`を追記する。次に、以下のコマンドを実行して`.profile`への変更を反映する。
+vimで`.profile`を開いたら、ファイルの末尾に`PATH="$PATH:/root/anaconda3/bin"`を追記する。編集後の`.profile`は[このように](examples/ex_profile.md)なっていれば良い。`cat ~/.profile`で確認できる。
+
+次に、以下のコマンドを実行して`.profile`への変更を反映する。
 ```shell
 $ source ~/.profile   # .profileへの変更を反映する
 ```
