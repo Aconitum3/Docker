@@ -29,7 +29,7 @@ $ cd home/mountpoint
 $ ls
 > 
 ```
-mountpointには何も含まれていない。このように、`docker commit`を実行しても、ボリュームでマウントしたディレクトリはイメージに含まれないことを覚えておきたい。
+mountpointには何も含まれていない。このように、`docker commit`を実行しても、ボリュームでマウントしたディレクトリの中身はイメージに含まれないことを覚えておきたい。
 
 Jupyter Labが実行できるかを確かめる。
 ```shell
@@ -48,4 +48,4 @@ $ docker save jupyter:python3.7 > jupyter.tar
 ```shell
 $ docker load -i jupyter.tar
 ```
-`docker load`は`-i`で指定したファイルをイメージとして読み込むコマンドである。ここでは、カレントディレクトリ上のjupyter.tarからイメージを作成した。作成したイメージからコンテナを起動するには、今まで通り`docker run`を実行すれば良い。
+`docker load`は`-i`で指定したファイルをイメージとして読み込むコマンドである。ここでは、カレントディレクトリのjupyter.tarからイメージを作成した。作成したイメージからコンテナを起動するには、今まで通り`docker run`を実行すれば良い。
