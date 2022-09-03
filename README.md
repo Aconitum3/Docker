@@ -16,3 +16,14 @@
  * Dockerのインストール
  * 各種用語
  * Dockerの基本操作
+
+ ### [Python3環境の構築](python/README.md)
+
+ * python3のインストール
+ * pythonイメージを利用した環境構築
+ * Jupyter Lab環境の構築
+
+ ### [イメージの配布](distimg/README.md)
+
+ * コンテナからイメージを作成する
+ * イメージの配布
