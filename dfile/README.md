@@ -61,7 +61,7 @@ CMD python3
 
 `ENV`は環境変数`<key>`と値`<value>`のセットで、`ENV <key> <value>`のように指定する。`ENV`では、作成するイメージで利用する環境変数を設定できる。環境変数とは、OSが提供するデータ共有機能の一つであり、PATHもこれに該当する。ここでは、`ENV PATH $PATH:/root/anaconda3/bin`とすることで、AnacondaのPATHを通している。
 
-以上で、動作するDockerfileが作成できた。イメージを作成し、コンテナを起動するとpython3のシェルに入ることができる。しかし、このDockerfileにはいくつか課題が残っている。それらの課題を解決することで、効率的なイメージを構築できる。順に説明する。
+以上で、動作するDockerfileが作成できた。イメージを作成し、コンテナを起動するとpython3のシェルに入ることができる。しかし、このDockerfileにはいくつか課題が残っている。それらの課題を解決することで、効率的なイメージを構築できる。1つずつ解決していく。
  * レイヤが多い。
 
     まずは、レイヤの概念を理解する必要があるだろう。Dockerのイメージはレイヤという層構造からなる。最下層のレイヤは`FROM`で指定されたベースイメージである。`RUN`などの一部の命令が行われるごとに、新たなレイヤが作成され上に蓄積していく。これらの層が少なければ、イメージのサイズは小さくなる。例えば、この章で作成したDockerfileの`RUN`の部分は次のように改善できる。
@@ -82,16 +82,23 @@ CMD python3
     ```
  * 余計なファイルが残っている。
 
-    実は、`RUN`の部分はさらに改善できる。`apt-get update`はインストール可能なパッケージのリストの一覧を更新するコマンドであった。`apt-get update`を実行すると、`/var/lib/apt/lists/`にリストの一覧がキャッシュされる。また、Anacondaのインストーラも残ったままである。これらを削除することで、イメージのサイズはさらに小さくなる。最終的な`RUN`の部分は次にようになる。
+    実は、`RUN`の部分はさらに改善できる。`apt-get update`はインストール可能なパッケージのリストの一覧を更新するコマンドであった。`apt-get update`を実行すると、`/var/lib/apt/lists/`にリストの一覧がキャッシュされる。また、Anacondaのインストーラも残ったままである。これらを削除することで、イメージのサイズはさらに小さくなる。最終的な[Dockerfile](anaconda/Dockerfile)は次にようになる。
     ```Dockerfile
+    FROM ubuntu:18.04
+
     RUN apt-get update && apt-get install -y \
       wget \
       && rm -rf /var/lib/apt/list/* \
       && wget https://repo.anaconda.com/archive/Anaconda3-2019.10-Linux-x86_64.sh \
       && bash Anaconda3-2019.10-Linux-x86_64.sh -b \
       && rm Anaconda3-2019.10-Linux-x86_64.sh
+    
+    ENV PATH $PATH:/root/anaconda3/bin
+
+    CMD python3
     ```
-    `rm`はファイルやディレクトリを削除するコマンドである。ディレクトリを削除する場合、`-r`をつける。`-r`をつけても削除する際に、問い合わせがあることがある。`-rf`は問い合わせを無視して問答無用で削除するオプションである。重要なファイルを削除してしまうことがあるため、`-rf`を使う際は十分に気をつけてほしい。
- * a
+    `rm`はファイルやディレクトリを削除するコマンドである。ディレクトリを削除する場合、`-r`をつける。`-r`をつけても削除する際に、問い合わせがあることがある。`-rf`は問い合わせを無視して問答無用で削除するオプションである。重要なファイルを削除してしまうことがあるため、`-rf`を使う際は十分に気をつけてほしい。また、読み易さに応じて`RUN`を分けることも考えた方が良い。上の例では、`apt-get install`周辺のコマンドとAnacondaのインストール周辺のコマンドを分けるなどが考えられる。
+
+これらの改善で、イメージのサイズは約400MB小さくなった。効率的なDockerfileを作成するノウハウは、[docker docs](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)で "Best practices for writing Dockerfiles" として公開されている。
 ## Jupyter Lab環境をDockerfileで作成する
 ## Dockerfileからイメージを作成する
