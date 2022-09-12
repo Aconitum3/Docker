@@ -97,8 +97,83 @@ CMD python3
 
     CMD python3
     ```
-    `rm`はファイルやディレクトリを削除するコマンドである。ディレクトリを削除する場合、`-r`をつける。`-r`をつけても削除する際に、問い合わせがあることがある。`-rf`は問い合わせを無視して問答無用で削除するオプションである。重要なファイルを削除してしまうことがあるため、`-rf`を使う際は十分に気をつけてほしい。また、読み易さに応じて`RUN`を分けることも考えた方が良い。上の例では、`apt-get install`周辺のコマンドとAnacondaのインストール周辺のコマンドを分けるなどが考えられる。
+    `rm`はファイルやディレクトリを削除するコマンドである。ディレクトリを削除する場合、`-r`をつける。`-r`をつけても削除する際に、問い合わせがあることがある。`-rf`は問い合わせを無視して問答無用で削除するオプションである。重要なファイルを削除してしまうことがあるため、`-rf`を使う際は十分に気をつけてほしい。また、可読性を考慮して`RUN`を分けることもある。上の例では、`apt-get install`周辺のコマンドとAnacondaのインストール周辺のコマンドを分けるなどが考えられる。
 
 これらの改善で、イメージのサイズは約400MB小さくなった。効率的なDockerfileを作成するノウハウは、[docker docs](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)で "Best practices for writing Dockerfiles" として公開されている。
 ## Jupyter Lab環境をDockerfileで作成する
-## Dockerfileからイメージを作成する
+ここでは、前章で構築したJupyter Lab環境をDockerfileで作成する。以下を満たしたい。
+* `pip`でjupyterlab, numpy, pandas, matplotlibをインストールする。
+* Root Processを`jupyter`にする。
+
+これらの要件を踏まえて、Dockerfileを作成する。また、ベースイメージにはpython:3.7を用いる。
+```Dockerfile
+FROM python:3.7
+
+RUN pip install \
+  jupyterlab \
+  matplotlib \
+  numpy \
+  pandas \
+
+EXPOSE 8888
+
+CMD jupyter lab --ip=0.0.0.0 --port=8888 --allow-root
+```
+`EXPOSE`では、コンテナ起動時にどのポートを公開するかを指定する。実際は、`EXPOSE`でポートが公開されるのではなく、`docker run`の`-p`でポートが公開される。つまり、`EXPOSE`はどのポートを公開するかの意図を示す、ある種のドキュメントとして機能する。
+
+ここから、このDockerfileにいくつか改善を加える。更に以下の要件を満たしたい。
+* `pip`のバージョンが古い可能性があるため、更新したい。`pip`の更新は`pip install --upgrade pip`を実行すれば良い。
+* pythonパッケージは目的に応じて柔軟にインストールしたい。そこで、インストールしたいパッケージの一覧を、[requirements.txt](jupyter/requirements.txt)に記述し、それを参照して`pip install`したい。カレントディレクトリ上の`requirements.txt`を参照して`pip install`を行うには、`pip install -r requirements.txt`を実行すれば良い。
+* `jupyter lab`コマンドは、Jupyter Labをカレントディレクトリで起動する。カレントディレクトリを`/home/`にした上でJupyter Labを起動したい。
+
+改善後の[Dockerfile](jupyter/Dockerfile)は次のようになる。
+```Dockerfile
+FROM python:3.7
+
+COPY requirements.txt ./
+
+RUN pip install --upgrade pip \
+  && pip install -r requirements.txt
+
+WORKDIR /home/
+
+EXPOSE 8888
+
+CMD jupyter lab --ip=0.0.0.0 --port=8888 --allow-root
+```
+`COPY <src> <dest>`では、イメージに追加したいファイルやディレクトリを`<src>`で指定し、イメージのファイルシステム上のパス`<dest>`に追加する。ここでは、カレントディレクトリ上の`requirements.txt`をイメージ内のカレントディレクトリに追加した。また、`COPY`は`RUN`と同じくレイヤが作成される命令である。
+
+`WORKDIR`では、以降に続く命令の処理時に使うカレントディレクトリを指定する。
+
+`Dockerfile`,`requirements.txt`は同一階層上に存在しなければならない。以下は一例である。
+```
+jupyter/
+　├ Dockerfile
+　├ requirements.txt
+　└ mountpoint/
+```
+上例のディレクトリ構造で、Dockerfileからコンテナ起動までの一連の流れを復習しておく。
+```shell
+$ cd jupyter
+$ docker build -t jupyter/dockerfile:latest ./
+$ docker run --name jupyter -p 8888:8888 -v $PWD/mountpoint:/home jupyter/dockerfile:latest
+```
+Dockerfileに変更を加えて`docker build`をしても、キャッシュが利用され、その変更が反映されないことがある。キャッシュを含めずに`docker build`を実行するには、`--no-cache`のオプションをつければ良い。
+
+### Jupyter Labのtokenを再確認する方法
+
+コンテナ再起動時などに、Jupyter Labのtokenを再度求められることがある。その場合の確認方法をいくつか紹介しておく。
+* `docker logs {-- CONTAINER ID or NAMES --}`で確認する。
+
+  `docker logs`は、コンテナ起動時から現在までのログを逐次表示するコマンドである。このログから、tokenの部分を探せば良い。
+* `jupyter lab list`で確認する。
+
+  `docker logs`で確認したtokenを入力しても、tokenが違うと返されることがある。この場合、コンテナのbashシェルに入ってtokenを確認する必要がある。ターミナルで次のコマンドを実行する。
+  ```shell
+  $ docker exec -it {-- CONTAINER ID or NAMES --} bash
+  ```
+  bashシェルでは、次のコマンドを実行する。
+  ```shell
+  $ jupyter lab list
+  ```
+  `jupyter lab list`を実行することで、起動中のJupyter Labのtokenが確認できる。
