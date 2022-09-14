@@ -6,7 +6,7 @@
 
 Dockerでは、Dockerfileから命令を読み込み、イメージを作成することができる。Dockerfileは拡張子のないテキストファイルであり、イメージを作成するために実行するコマンドを全て含んでいる。いわば、イメージの設計図のようなものである。
 
-ごく簡潔なDockerfileの例を見てみる。
+ごく簡潔な[Dockerfile](ez/Dockerfile)の例を見てみる。
 
 ```Dockerfile
 FROM busybox:latest
