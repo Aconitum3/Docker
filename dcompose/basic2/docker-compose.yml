@@ -1,0 +1,16 @@
+version: "2"
+services:
+  web_db:
+      build:
+        context: web_db
+        dockerfile: Dockerfile
+      environment:
+        - MYSQL_ROOT_PASSWORD=my-password
+  web_app:
+      build:
+        context: web_app
+        dockerfile: Dockerfile
+      tty: true
+      depends_on:
+        web_db:
+          condition: service_started 

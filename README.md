@@ -31,7 +31,7 @@
  ### [Dockerfile](dfile/README.md)
 
  * Dockerfileとは
- * Anacondaを利用したpython3環境をDockerfileで作成する
+ * python3環境(Anaconda)をDockerfileで作成する
  * Jupyter Lab環境をDockerfileで作成する
 
 ### [Docker Compose](dcompose/README.md)

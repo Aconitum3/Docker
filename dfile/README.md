@@ -29,8 +29,8 @@ $ docker run --name hello hello:latest
 ```
 ここで、helloコンテナのRoot Processが`echo "hello world"`であるため、`-it`をオプションに付けなくて良いことは理解しておきたい。また、`docker ps`を実行してみると、helloコンテナが停止していることが確認できるはずだ。
 
-## Anacondaを利用したpython3環境をDockerfileで作成する
-前章では、Anacondaを利用したpython3環境を作成した。ここでは、いくつかの新しいDockerfile記法を学ぶために、この環境をDockerfileで作成してみる。ubuntu:18.04のイメージをベースに以下を実行する必要がある。
+## python3環境(Anaconda)をDockerfileで作成する
+前章では、Anacondaを用いてpython3環境を作成した。ここでは、いくつかの新しいDockerfile記法を学ぶために、この環境をDockerfileで作成してみる。ubuntu:18.04のイメージをベースに以下を実行する必要がある。
  * anaconda.comから、インストーラをダウンロードする。
  * インストーラを実行する。
  * PATHを通す。
