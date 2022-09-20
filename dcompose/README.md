@@ -313,7 +313,7 @@ $ docker-compose exec web_app python3 app.py
 $ docker-compose build
 ```
 
-### 応用編 Web3層構造の実装
+### 応用編　Web3層構造の実装
 はじめに、前節で作成したAppサーバー(Pythonコンテナ)にいくつか要素を追加する。まず、`app.py`として次のファイルを作成する。
 ```python
 # app.py
@@ -379,6 +379,7 @@ Dockerfileは次のようになる。
 ```Dockerfile
 FROM nginx:latest
 COPY default.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
 ```
 
 現在のディレクトリ構成は次のようになっている。
@@ -435,3 +436,33 @@ projectディレクトリ下が[このように](advanced)なっていれば良�
 $ docker-compose up
 ```
 `localhost:80`にアクセスすると、学生のデータが確認できる。
+
+## Jupyter Lab環境をdocker-composeで作成する
+前節では、Web3層構造を例に`docker-compose.yml`の基本的な記法を学んだ。本節では、前章で作成したJupyter Lab環境の[Dockerfile](../dfile/jupyter/Dockerfile)を使って、`docker-compose`で環境を構築する。
+
+次のような、`docker-compose.yml`を作成する。
+```yml
+version: "2"
+services:
+  jupyter:
+    build:
+     context: .
+     dockerfile: Dockerfile
+    volumes:
+      - ./mountpoint:/home
+    ports:
+      - "8888:8888"
+```
+`volumes`では、ホストのディレクトリを、コンテナのディレクトリにマウントしている。ここでは、ホストのカレントディレクトリ内のmountpointディレクトリをコンテナのhomeディレクトリにマウントしている。mountpointディレクトリが存在しない場合、`docker-compose up`を実行した時に自動で作成される。現在のディレクトリ構成は[このように](jupyter)なっている。
+```
+jupyter/
+　├ Dockerfile
+　├ docker-compose.yml
+　├ requirements.txt
+　└ mountpoint/
+```
+Jupyter Labを起動してみる。ターミナルで次のコマンドを実行する。
+```bash
+$ docker-compose up
+```
+ログで出力されるURLにアクセスするとJupyter Labに接続できる。また、コンテナの停止には`Ctrl+C`を入力する方法もある。

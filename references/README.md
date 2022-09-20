@@ -12,3 +12,4 @@
 * [「docker run -it」にするとコンテナがすぐ終了しない理由](https://architecting.hateblo.jp/entry/2020/08/13/153842)
 * [0.0.0.0でサーバーを立てる理由(Python)](https://zenn.dev/shake_sanma/articles/1c6475ba73da48)
 * [Docker export/import/save/loadコマンド](https://www.tohoho-web.com/docker/docker_export.html)
+* [Docker Composeで3層ウェブアーキテクチャを構成する](https://techblog.nhn-techorus.com/archives/14429)
