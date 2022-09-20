@@ -14,3 +14,12 @@ services:
       depends_on:
         web_db:
           condition: service_started
+  web_web:
+      build:
+        context: web_web
+        dockerfile: Dockerfile
+      ports:
+       - "80:80"
+      depends_on:
+        web_app:
+          condition: service_started

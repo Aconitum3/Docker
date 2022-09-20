@@ -40,7 +40,7 @@ mysql> CREATE DATABASE db;
 mysql> USE db;
 mysql> CREATE TABLE students (name VARCHAR(255), age INT);
 ```
-データベース`db`に、テーブル`students`を作成した。ここに行くつかのデータを追加する。
+データベース`db`に、テーブル`students`を作成した。ここにいくつかのデータを追加する。
 ```SQL
 mysql> INSERT INTO students (name, age) VALUES ("Taro", 16), ("Hanako", 17), ("Pochi", 3);
 mysql> SELECT * FROM students;
@@ -301,3 +301,137 @@ services:
           condition: service_started 
 ```
 projectディレクトリ下が[このように](basic2)なっていれば良い。
+
+プロジェクトを起動してみる。カレントディレクトリがprojectディレクトリの状態で、次のコマンドを実行する。
+```bash
+$ docker-compose up -d
+$ docker-compose exec web_app python3 app.py
+> (('Taro', 16), ('Hanako', 17), ('Pochi', 3))
+```
+上手くいかない場合、イメージのキャッシュが残っているかもしれない。`docker-compose build`でイメージを再生成できる。
+```bash
+$ docker-compose build
+```
+
+### 応用編 Web3層構造の実装
+はじめに、前節で作成したAppサーバー(Pythonコンテナ)にいくつか要素を追加する。まず、`app.py`として次のファイルを作成する。
+```python
+# app.py
+
+from flask import Flask
+import MySQLdb
+
+app = Flask(__name__)    # アプリケーションのインスタンスを作成
+
+@app.route('/')          # rootページを定義
+def root():
+
+    db_settings = {"host": "web_db", "user": "root", "passwd": "my-password", "db": "db", "charset": "utf8mb4"}
+    db_conn = MySQLdb.connect(**db_settings) 
+    cursor = db_conn.cursor()
+    cursor.execute("SELECT * FROM students")
+    ret = cursor.fetchall()
+    db_conn.close()
+
+    body = "<table><tr><th>name</th><th>age</th></tr>{}</table>".format(
+        "".join([
+            "<tr><td>{}</td><td>{}</td>".format(name, age)
+            for name, age
+            in ret
+        ])
+        )
+    page = "<html><head><title>Students</title></head><body>{body}</body><html>"
+
+    return page.format(body=body)
+```
+`app.py`では、HTTPリクエストがあるとデータベースに接続し、それをテーブルにしたHTMLを返す。
+
+Dockerfileを次のように修正する。
+```Dockerfile
+FROM python:3.7
+RUN pip install mysqlclient flask gunicorn
+COPY app.py ./
+CMD gunicorn app:app --bind 0.0.0.0:80
+```
+`gunicorn`はDjangoやFlaskなどのWebアプリケーションを動かすHTTPサーバーである。Djangoなどのフレームワークには、サーバーを起動するコマンドがあるが、`gunicorn`のサーバーはそれらのサーバーに比べ速く、安定して動作する。`gunicorn hello:app`は、`hello.py`の`app`というアプリケーションを起動する。また、`--bind`オプションをつけると、ネットワークとポートを指定できる。Dockerのコンテナは`0.0.0.0`でないと、外部からコンテナにアクセスできないのであった。よって、`gunicorn app:app --bind 0.0.0.0:80`は`app.py`の`app`アプリケーションを`0.0.0.0:80`で起動するコマンドである。
+
+次に、Nginxコンテナを作成する。Docker Hubにnginxのイメージが公開されているため、それを元にDockerfileを作成する。Nginxでは、接続先のWebサーバーを指定するとき、それを`default.conf`に記述する。ここでは、詳しい説明は省略するが、次のような`default.conf`を作成する。
+```conf
+# default.conf
+
+server {
+    listen       80;
+    server_name  localhost;
+
+    location / {
+        proxy_pass http://web_app;
+    }
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+}
+```
+`location`の`proxy_pass`に、`http://web_app`を指定する。
+
+Dockerfileは次のようになる。
+```Dockerfile
+FROM nginx:latest
+COPY default.conf /etc/nginx/conf.d/default.conf
+```
+
+現在のディレクトリ構成は次のようになっている。
+```
+project/
+　├ web_db/
+　│ 　├ Dockerfile
+　│ 　└ init.sh
+　├ web_app/
+　│ 　├ Dockerfile
+　│ 　└ app.py
+　├ web_app/
+　│ 　├ Dockerfile
+　│ 　└ default.conf
+　└ docker-compose.yml
+```
+
+最後に、`docker-compose.yml`を修正する。次のように`web_web`を追加する。
+```yml
+version: "2"
+services:
+  web_db:
+      build:
+        context: web_db
+        dockerfile: Dockerfile
+      environment:
+        - MYSQL_ROOT_PASSWORD=my-password
+  web_app:
+      build:
+        context: web_app
+        dockerfile: Dockerfile
+      tty: true
+      depends_on:
+        web_db:
+          condition: service_started
+  web_web:
+      build:
+        context: web_web
+        dockerfile: Dockerfile
+      ports:
+       - "80:80"
+      depends_on:
+        web_app:
+          condition: service_started
+```
+`ports`では、ホストのポートとコンテナのポートをマッピングする。`"8888:6666"`なら、コンテナの`6666`番ポートをホストの`8888`番ポートにマッピングする。
+
+`depends_on`では、`web_app`が起動した後に、`web_web`が起動するようにする。`web_web`が`web_app`を参照するからだ。
+
+projectディレクトリ下が[このように](advanced)なっていれば良い。
+
+プロジェクトを起動してみる。カレントディレクトリがprojectディレクトリの状態で、次のコマンドを実行する。
+```bash
+$ docker-compose up
+```
+`localhost:80`にアクセスすると、学生のデータが確認できる。
