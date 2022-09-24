@@ -9,6 +9,8 @@ Dockerでは、Dockerfileから命令を読み込み、イメージを作成す�
 ごく簡潔な[Dockerfile](ez/Dockerfile)の例を見てみる。
 
 ```Dockerfile
+# Dockerfile
+
 FROM busybox:latest
 CMD echo "hello world"
 ```
@@ -39,6 +41,8 @@ $ docker run --name hello hello:latest
 以上を満たしたDockerfileは次のようになる。
 
 ```Dockerfile
+# Dockerfile
+
 FROM ubuntu:18.04
 
 RUN apt-get update && apt-get install -y wget
@@ -66,6 +70,8 @@ CMD python3
 
     まずは、レイヤの概念を理解する必要があるだろう。Dockerのイメージはレイヤという層構造からなる。最下層のレイヤは`FROM`で指定されたベースイメージである。`RUN`などの一部の命令が行われるごとに、新たなレイヤが作成され上に蓄積していく。これらの層が少なければ、イメージのサイズは小さくなる。例えば、この章で作成したDockerfileの`RUN`の部分は次のように改善できる。
     ```Dockerfile
+    # Dockerfile
+
     RUN apt-get update && apt-get install -y \
       wget \
       && wget https://repo.anaconda.com/archive/Anaconda3-2019.10-Linux-x86_64.sh \
@@ -73,6 +79,8 @@ CMD python3
     ```
     改行の際は` \`を加える。話が少しそれるが、`apt-get install`で複数のパッケージをまとめてインストールする場合、パッケージの重複指定を防ぐためにも、以下の例のように改行し、アルファベット順で並べるのが望ましい。
     ```Dockerfile
+    # Dockerfile
+
     RUN apt-get update && apt-get install -y \
       bzr \
       cvs \
@@ -84,6 +92,8 @@ CMD python3
 
     実は、`RUN`の部分はさらに改善できる。`apt-get update`はインストール可能なパッケージのリストの一覧を更新するコマンドであった。`apt-get update`を実行すると、`/var/lib/apt/lists/`にリストの一覧がキャッシュされる。また、Anacondaのインストーラも残ったままである。これらを削除することで、イメージのサイズはさらに小さくなる。最終的な[Dockerfile](anaconda/Dockerfile)は次にようになる。
     ```Dockerfile
+    # Dockerfile
+
     FROM ubuntu:18.04
 
     RUN apt-get update && apt-get install -y \
@@ -107,6 +117,8 @@ CMD python3
 
 これらの要件を踏まえて、Dockerfileを作成する。また、ベースイメージにはpython:3.7を用いる。
 ```Dockerfile
+# Dockerfile
+
 FROM python:3.7
 
 RUN pip install \
@@ -128,6 +140,8 @@ CMD jupyter lab --ip=0.0.0.0 --port=8888 --allow-root
 
 改善後の[Dockerfile](jupyter/Dockerfile)は次のようになる。
 ```Dockerfile
+# Dockerfile
+
 FROM python:3.7
 
 COPY requirements.txt ./

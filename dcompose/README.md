@@ -177,6 +177,8 @@ $ docker rm web_app
 MySQLコンテナは次のように定義する。
 
 ```yml
+# docker-compose.yml
+
 version: "2"
 services:
   web_db:
@@ -234,6 +236,8 @@ print(ret)
 `docker-compose.yml`は次のようになる。
 
 ```yml
+# docker-compose.yml
+
 version: "2"
 services:
   web_db:
@@ -257,6 +261,8 @@ services:
 
 最後に、`web_db`に少し変更を加える。データベース・テーブルを作成し、データを追加する操作をスクリプトファイルにまとめたい。`init.sh`として次のファイルを作成する。
 ```sh
+# init.sh
+
 COMMAND='
 CREATE DATABASE db;
 USE db;
@@ -283,6 +289,8 @@ project/
 ```
 `docker-compose.yml`は、次のように修正する。
 ```yml
+# docker-compose.yml
+
 version: "2"
 services:
   web_db:
@@ -348,6 +356,8 @@ def root():
 
 Dockerfileを次のように修正する。
 ```Dockerfile
+# Dockerfile
+
 FROM python:3.7
 RUN pip install mysqlclient flask gunicorn
 COPY app.py ./
@@ -377,6 +387,8 @@ server {
 
 Dockerfileは次のようになる。
 ```Dockerfile
+# Dockerfile
+
 FROM nginx:latest
 COPY default.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
@@ -399,6 +411,8 @@ project/
 
 最後に、`docker-compose.yml`を修正する。次のように`web_web`を追加する。
 ```yml
+# docker-compose.yml
+
 version: "2"
 services:
   web_db:
@@ -442,6 +456,8 @@ $ docker-compose up
 
 次のような、`docker-compose.yml`を作成する。
 ```yml
+# docker-compose.yml
+
 version: "2"
 services:
   jupyter:
