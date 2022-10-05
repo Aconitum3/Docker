@@ -15,6 +15,9 @@ Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docke
 
 のようなエラーメッセージが表示される。
 
+### `WSL2 installation is incomplete`の解決法（Windows）
+WindowsでDocker Desktopを起動した時に、"WSL2 installation is incomplete"というエラーメッセージが表示されることがある。その場合、microsoftが配布している[Linuxカーネル更新プログラム](https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi)を実行することで解決することがある。
+
 ## 各種用語
 
 次節で出てくる専門的な用語をまとめておく。必要に応じて参照すると良い。
