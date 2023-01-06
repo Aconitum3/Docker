@@ -403,7 +403,7 @@ project/
 　├ web_app/
 　│ 　├ Dockerfile
 　│ 　└ app.py
-　├ web_app/
+　├ web_web/
 　│ 　├ Dockerfile
 　│ 　└ default.conf
 　└ docker-compose.yml
